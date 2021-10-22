@@ -34,8 +34,3 @@ $ juju relate finos-legend-db-k8s finos-legend-sdlc-k8s
 $ juju relate finos-legend-db-k8s finos-legend-engine-k8s
 $ juju relate finos-legend-db-k8s finos-legend-studio-k8s
 ```
-
-## OCI Images
-
-This charm has no actual workload container, but deploys a shell container
-based on the [Ubuntu Xenial](https://hub.docker.com/_/ubuntu) image.
