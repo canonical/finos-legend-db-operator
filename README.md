@@ -1,3 +1,5 @@
+[![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
+
 # FINOS Legend Database Manager Operator
 
 ## Description
@@ -34,3 +36,16 @@ $ juju relate finos-legend-db-k8s finos-legend-sdlc-k8s
 $ juju relate finos-legend-db-k8s finos-legend-engine-k8s
 $ juju relate finos-legend-db-k8s finos-legend-studio-k8s
 ```
+
+## Contributing
+
+Visit Legend [Contribution Guide](https://github.com/finos/legend/blob/master/CONTRIBUTING.md) to learn how to contribute to Legend.
+
+## License
+
+Copyright (c) 2021-present, Canonical
+
+Distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+SPDX-License-Identifier: [Apache-2.0](https://spdx.org/licenses/Apache-2.0)
+
