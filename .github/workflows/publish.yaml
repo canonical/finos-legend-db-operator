@@ -1,15 +1,12 @@
 name: Publish Charm
 
 on:
-  pull_request:
+  push:
     branches:
       - main
-    types:
-      - closed
 
 jobs:
   publish-charm:
-    if: github.event.pull_request.merged == true
     name: Publish Charm to edge
     runs-on: ubuntu-20.04
     steps:
