@@ -37,6 +37,10 @@ $ juju relate finos-legend-db-k8s finos-legend-engine-k8s
 $ juju relate finos-legend-db-k8s finos-legend-studio-k8s
 ```
 
+## Charm releases
+
+This repository is configured to automatically build and publish a new Charm revision after a Pull Request merges. For more information, see [here](docs/CharmPublishing.md).
+
 ## Contributing
 
 Visit Legend [Contribution Guide](https://github.com/finos/legend/blob/master/CONTRIBUTING.md) to learn how to contribute to Legend.
