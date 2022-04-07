@@ -28,6 +28,7 @@ class LegendDatabaseManagerCharm(charm.CharmBase):
 
         # General hooks:
         self.framework.observe(self.on.install, self._on_install)
+        self.framework.observe(self.on.upgrade_charm, self._on_upgrade_charm)
 
         # MongoDB consumer setup:
         self._mongodb_consumer = MongoConsumer(self, MONGODB_RELATION_NAME)
@@ -59,6 +60,14 @@ class LegendDatabaseManagerCharm(charm.CharmBase):
         self._stored.set_default(log_level="DEBUG")
 
     def _on_install(self, _: charm.InstallEvent):
+        self.unit.status = model.BlockedStatus("requires relating to: mongodb-k8s")
+
+    def _on_upgrade_charm(self, _: charm.UpgradeCharmEvent) -> None:
+        db_relation = self.model.get_relation(MONGODB_RELATION_NAME)
+        if db_relation:
+            self._update_db_credentials(db_relation.id)
+            return
+
         self.unit.status = model.BlockedStatus("requires relating to: mongodb-k8s")
 
     def _on_config_changed(self, _) -> None:
@@ -122,7 +131,9 @@ class LegendDatabaseManagerCharm(charm.CharmBase):
         return legend_database_creds
 
     def _on_db_relation_changed(self, event: charm.RelationChangedEvent) -> None:
-        rel_id = event.relation.id
+        self._update_db_credentials(event.relation.id)
+
+    def _update_db_credentials(self, rel_id):
         legend_database_creds = self._get_mongo_db_credentials(rel_id)
         if isinstance(legend_database_creds, (model.WaitingStatus, model.BlockedStatus)):
             self.unit.status = legend_database_creds
