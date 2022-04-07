@@ -117,19 +117,23 @@ class TestCharm(unittest.TestCase):
     def test_upgrade_charm(
         self, _set_rel_cred_mock, _get_rel_creds_mock, _mongo_consumer_cls_mock
     ):
-        self._add_mongo_relation({"anything": "works"})
         self.harness.set_leader()
         self.harness.begin_with_initial_hooks()
-
-        self.assertIsInstance(self.harness.charm.unit.status, model.ActiveStatus)
 
         # NOTE: When upgrading a charm, it will be put in a Waiting state while charm is upgrading.
         # Currently, there is no way of having the harness to the same thing, so we have to set
         # the Waiting state ourselves.
         self.harness.charm.unit.status = model.WaitingStatus("waiting for units to settle down")
-
         self.harness.charm.on.upgrade_charm.emit()
 
-        # Assert that the unit is still in Waiting Status, since the charm only changes its status
-        # when the related mongodb-k8s charm updates the relation with valid data.
-        self.assertIsInstance(self.harness.charm.unit.status, model.WaitingStatus)
+        # The mongodb relation was not created yet, the charm should be in Blocked Status.
+        self.assertIsInstance(self.harness.charm.unit.status, model.BlockedStatus)
+
+        # Add the relation, and expect it to become Active.
+        self._add_mongo_relation({"anything": "works"})
+        self.assertIsInstance(self.harness.charm.unit.status, model.ActiveStatus)
+
+        # Upgrade the charm, and expect it to become Active.
+        self.harness.charm.unit.status = model.WaitingStatus("waiting for units to settle down")
+        self.harness.charm.on.upgrade_charm.emit()
+        self.assertIsInstance(self.harness.charm.unit.status, model.ActiveStatus)
