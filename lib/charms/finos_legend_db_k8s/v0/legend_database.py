@@ -19,14 +19,12 @@ LIBAPI = 0
 LIBPATCH = 4
 
 LEGEND_DB_RELATION_DATA_KEY = "legend-db-connection"
-REQUIRED_LEGEND_DATABASE_CREDENTIALS = [
-    "username", "password", "database", "uri"]
+REQUIRED_LEGEND_DATABASE_CREDENTIALS = ["username", "password", "database", "uri"]
 
 logger = logging.getLogger(__name__)
 
 
-def get_database_connection_from_mongo_data(
-        mongodb_consumer_data, mongodb_databases):
+def get_database_connection_from_mongo_data(mongodb_consumer_data, mongodb_databases):
     """Returns a dict with Mongo connection info for Legend components.
 
     Output is compatible with `LegendDatabaseConsumer.get_legend_database_creds()`.
@@ -55,47 +53,49 @@ def get_database_connection_from_mongo_data(
         logger.warning("MongoDB consumer data not a dict.")
         return {}
     missing_keys = [
-        k for k in ["username", "password", "replica_set_uri"]
-        if not mongodb_consumer_data.get(k)]
+        k for k in ["username", "password", "replica_set_uri"] if not mongodb_consumer_data.get(k)
+    ]
     if missing_keys:
         logger.warning(
             "Following keys were missing from the MongoDB connection "
             "data provided: %s. Data was: %s",
-            missing_keys, mongodb_consumer_data)
+            missing_keys,
+            mongodb_consumer_data,
+        )
         return {}
     if any([not isinstance(v, str) for v in mongodb_consumer_data.values()]):
-        logger.warning(
-            "Not all mongoDB database values are strings: %s", mongodb_consumer_data)
+        logger.warning("Not all mongoDB database values are strings: %s", mongodb_consumer_data)
         return {}
 
     if not isinstance(mongodb_databases, list) or not (
-            all([isinstance(v, str) for v in mongodb_databases])):
-        logger.warning(
-            "MongoDB databases must be a list of strings, not: %s",
-            mongodb_databases)
+        all([isinstance(v, str) for v in mongodb_databases])
+    ):
+        logger.warning("MongoDB databases must be a list of strings, not: %s", mongodb_databases)
         return {}
     if not mongodb_databases:
         logger.info("No Mongo databases provided by the MongoConsumer.")
         return {}
 
-    uri = mongodb_consumer_data['replica_set_uri']
+    uri = mongodb_consumer_data["replica_set_uri"]
     # NOTE: we remove the trailing database from the URI:
     split_uri = [
-        elem for elem in uri.split('/')[:-1]
+        elem
+        for elem in uri.split("/")[:-1]
         # NOTE: filter any empty strings resulting from double-slashes:
-        if elem]
+        if elem
+    ]
     if not len(split_uri) > 1:
         logger.warning("Failed to process DB URI: %s", uri)
         return {}
     # NOTE: schema prefix needs two slashes added back:
-    uri = "%s//%s" % (
-        split_uri[0], "/".join(split_uri[1:]))
+    uri = "%s//%s" % (split_uri[0], "/".join(split_uri[1:]))
 
     res = {
         "uri": uri,
-        "username": mongodb_consumer_data['username'],
-        "password": mongodb_consumer_data['password'],
-        "database": mongodb_databases[0]}
+        "username": mongodb_consumer_data["username"],
+        "password": mongodb_consumer_data["password"],
+        "database": mongodb_databases[0],
+    }
 
     if not _validate_legend_database_credentials(res):
         logger.warning("Failed to validate legend creds.")
@@ -121,14 +121,16 @@ def set_legend_database_creds_in_relation_data(relation_data, creds):
 
 def _validate_legend_database_credentials(creds):
     """Checks whether the given legend DB creds contain all required keys."""
-    if not isinstance(creds, dict) or any([
-            not isinstance(creds.get(k), str) for k in REQUIRED_LEGEND_DATABASE_CREDENTIALS]):
+    if not isinstance(creds, dict) or any(
+        [not isinstance(creds.get(k), str) for k in REQUIRED_LEGEND_DATABASE_CREDENTIALS]
+    ):
         return False
     return True
 
 
 class LegendDatabaseConsumer(framework.Object):
     """Class which facilitates reading Legend DB creds from relation data."""
+
     def __init__(self, charm, relation_name="legend-db"):
         super().__init__(charm, relation_name)
         self.charm = charm
@@ -153,12 +155,11 @@ class LegendDatabaseConsumer(framework.Object):
             TooManyRelatedAppsError if relation id is not provided and
             multiple relation of the same name are present.
         """
-        relation = self.framework.model.get_relation(
-            self.relation_name, relation_id)
+        relation = self.framework.model.get_relation(self.relation_name, relation_id)
         if not relation:
             logger.warning(
-                "No relation of name '%s' and ID '%s' was found.",
-                self.relation_name, relation_id)
+                "No relation of name '%s' and ID '%s' was found.", self.relation_name, relation_id
+            )
             return {}
         relation_data = relation.data[relation.app]
 
@@ -167,8 +168,10 @@ class LegendDatabaseConsumer(framework.Object):
             creds = json.loads(creds_data)
         except Exception as ex:
             logger.warning(
-                "Could not deserialize Legend DB creds JSON: %s. Error "
-                "was: %s", creds_data, str(ex))
+                "Could not deserialize Legend DB creds JSON: %s. Error " "was: %s",
+                creds_data,
+                str(ex),
+            )
             return {}
         if not _validate_legend_database_credentials(creds):
             logger.warning("Invalid DB creds in relation: %s", creds)
